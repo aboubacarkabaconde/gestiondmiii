@@ -1,0 +1,151 @@
+{% extends 'base.html' %}
+{% block title %}Produits - Gestion D.M.I{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between mb-4">
+        <h1 class="section-title text-primary"><i class="bi bi-box-seam"></i> Produits</h1>
+        <a href="{% url 'produits:ajouter' %}" class="btn btn-primary shadow"><i class="bi bi-plus-circle"></i> Nouveau Produit</a>
+    </div>
+
+    <div class="card shadow-sm border-0 mb-4">
+        <div class="card-body">
+            <table class="table table-hover align-middle">
+                <thead class="table-primary">
+                <tr>
+                    <th>Nom</th>
+                    <th>Type</th>
+                    <th>Stock</th>
+                    <th>Unité</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+                <tbody>
+                    {% for produit in page_obj %}
+                    <tr>
+                        <td>{{ produit.nom }}</td>
+                        <td>{{ produit.get_type_display }}</td>
+                        <td>{{ produit.quantite_stock }}</td>
+                        <td>{{ produit.unite }}</td>
+                        <td>
+                            <a href="{% url 'produits:detail' produit.id %}" class="btn btn-sm btn-info"><i class="bi bi-eye"></i></a>
+                            <a href="{% url 'produits:modifier' produit.id %}" class="btn btn-sm btn-warning"><i class="bi bi-pencil"></i></a>
+                            <a href="{% url 'produits:supprimer' produit.id %}" class="btn btn-sm btn-danger"><i class="bi bi-trash"></i></a>
+                        </td>
+                    </tr>
+                    {% empty %}<tr><td colspan="5" class="text-center">Aucun produit</td></tr>{% endfor %}
+                </tbody>
+            </table>
+
+              <!-- Pagination -->
+                <nav aria-label="Pagination produits">
+                    <ul class="pagination justify-content-center mt-3">
+                        {% if page_obj.has_previous %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.previous_page_number }}">Précédent</a>
+                        </li>
+                        {% else %}
+                        <li class="page-item disabled"><span class="page-link">Précédent</span></li>
+                        {% endif %}
+
+                        {% for num in page_obj.paginator.page_range %}
+                            {% if page_obj.number == num %}
+                                <li class="page-item active"><span class="page-link">{{ num }}</span></li>
+                            {% else %}
+                                <li class="page-item"><a class="page-link" href="?page={{ num }}">{{ num }}</a></li>
+                            {% endif %}
+                        {% endfor %}
+
+                        {% if page_obj.has_next %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.next_page_number }}">Suivant</a>
+                        </li>
+                        {% else %}
+                        <li class="page-item disabled"><span class="page-link">Suivant</span></li>
+                        {% endif %}
+                    </ul>
+                </nav>
+
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6"><div class="card p-3 shadow-sm"><canvas id="stockChart"></canvas></div></div>
+        <div class="col-md-6"><div class="card p-3 shadow-sm"><canvas id="pieChart"></canvas></div></div>
+        <div class="row">
+        <div class="col-md-4">
+            <div class="card p-3 shadow-sm">
+                <canvas id="stockChart"></canvas>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card p-3 shadow-sm">
+                <canvas id="pieChart"></canvas>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card p-3 shadow-sm">
+                <canvas id="typeChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    const labels = {{ labels|safe }};
+    const stocks = {{ stocks|safe }};
+    new Chart(document.getElementById("stockChart"), { type: "bar", data: { labels: labels, datasets: [{ label: "Quantité", data: stocks, backgroundColor: "#3498db" }] }});
+    new Chart(document.getElementById("pieChart"), { type: "doughnut", data: { labels: labels, datasets: [{ data: stocks, backgroundColor: ["#3498db","#2ecc71","#f1c40f","#e67e22"] }] }});
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    // Bar chart : stocks par produit
+    const labels = {{ labels|safe }};
+    const stocks = {{ stocks|safe }};
+    new Chart(document.getElementById("stockChart"), {
+        type: "bar",
+        data: {
+            labels: labels,
+            datasets: [{
+                label: "Quantité",
+                data: stocks,
+                backgroundColor: "#3498db"
+            }]
+        }
+    });
+
+    // Camembert : répartition des stocks par produit
+    new Chart(document.getElementById("pieChart"), {
+        type: "doughnut",
+        data: {
+            labels: labels,
+            datasets: [{
+                data: stocks,
+                backgroundColor: ["#3498db","#2ecc71","#f1c40f","#e67e22","#9b59b6","#1abc9c"]
+            }]
+        }
+    });
+
+    // Nouveau camembert : MP vs PF
+    const labelsType = {{ labels_type|safe }};
+    const dataType = {{ data_type|safe }};
+    new Chart(document.getElementById("typeChart"), {
+        type: "doughnut",
+        data: {
+            labels: labelsType,
+            datasets: [{
+                data: dataType,
+                backgroundColor: ["#007bff","#28a745"]
+            }]
+        }
+    });
+</script>
+
+
+{% endblock %}

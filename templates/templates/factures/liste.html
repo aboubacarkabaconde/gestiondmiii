@@ -1,0 +1,192 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+{% block title %}Liste des Factures{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+
+    <!-- En-tête -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="section-title text-primary">
+            <i class="bi bi-receipt me-2"></i> Factures
+        </h1>
+        <div>
+            <a href="{% url 'factures:export_csv' %}" class="btn btn-outline-success me-2">
+                <i class="bi bi-file-earmark-excel"></i> Exporter CSV
+            </a>
+            <a href="{% url 'factures:imprimer' %}" class="btn btn-outline-danger me-2" target="_blank">
+                <i class="bi bi-printer"></i> Imprimer
+            </a>
+            <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#factureModal">
+                <i class="bi bi-plus-circle"></i> Nouvelle Facture
+            </button>
+        </div>
+    </div>
+
+    <!-- Statistiques (KPI) -->
+    <div class="row mb-4">
+        <div class="col-md-6 mb-3">
+            <div class="card dashboard-card text-center text-success">
+                <div class="card-body">
+                    <i class="bi bi-cash-stack card-icon"></i>
+                    <h3 class="stats-number">{{ montant_total|default:"0" }} FG</h3>
+                    <p class="card-text">Montant Total des Factures</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 mb-3">
+            <div class="card dashboard-card text-center text-warning">
+                <div class="card-body">
+                    <i class="bi bi-exclamation-triangle card-icon"></i>
+                    <h3 class="stats-number">{{ montant_a_recouvrer|default:"0" }} FG</h3>
+                    <p class="card-text">Montant à Recouvrer</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tableau des Factures -->
+    <div class="card shadow-sm border-0 mb-4">
+        <div class="card-body table-responsive">
+            <table class="table table-hover align-middle">
+                <thead class="table-light">
+                    <tr>
+                        <th>ID</th>
+                        <th>Type</th>
+                        <th>Client/Fournisseur</th>
+                        <th>Site</th>
+                        <th>Produit</th>
+                        <th>Quantité</th>
+                        <th>Total</th>
+                        <th>Payé</th>
+                        <th>Statut</th>
+                        <th>Date</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for facture in factures %}
+                    <tr>
+                        <td>#{{ facture.id }}</td>
+                        <td>
+                            {% if facture.is_achat %}
+                                <span class="badge bg-danger">Achat</span>
+                            {% else %}
+                                <span class="badge bg-success">Vente</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ facture.client_fournisseur }}</td>
+                        <td>{{ facture.site.nom }}</td>
+                        <td>{{ facture.produit.nom }}</td>
+                        <td>{{ facture.quantite }} {{ facture.produit.unite }}</td>
+                        <td><span class="badge bg-primary">{{ facture.total }} FG</span></td>
+                        <td><span class="badge bg-info">{{ facture.montant_paye }} FG</span></td>
+                        <td>
+                            {% if facture.status == "payee" %}
+                                <span class="badge bg-success">Payée</span>
+                            {% elif facture.status == "partielle" %}
+                                <span class="badge bg-warning text-dark">Partielle</span>
+                            {% else %}
+                                <span class="badge bg-danger">Impayée</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ facture.date|date:"d/m/Y" }}</td>
+                        <td>
+                            <a href="{% url 'factures:detail' facture.id %}" class="btn btn-sm btn-outline-primary"><i class="bi bi-eye"></i></a>
+                            <a href="{% url 'factures:modifier' facture.id %}" class="btn btn-sm btn-outline-warning"><i class="bi bi-pencil"></i></a>
+                            <a href="{% url 'factures:supprimer' facture.id %}" class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="11" class="text-center text-muted">Aucune facture enregistrée.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Graphiques -->
+    <div class="row mb-4">
+        <div class="col-md-6 mb-3">
+            <div class="card dashboard-card p-3 shadow-sm">
+                <h6 class="text-center text-primary">Chiffre d'affaires par Mois</h6>
+                <canvas id="facturesChart"></canvas>
+            </div>
+        </div>
+        <div class="col-md-6 mb-3">
+            <div class="card dashboard-card p-3 shadow-sm">
+                <h6 class="text-center text-primary">Répartition des Factures (Achat vs Vente)</h6>
+                <canvas id="typesChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<!-- ================= Inclure la Modale Ajout Facture ================= -->
+<div class="modal fade" id="factureModal" tabindex="-1" aria-labelledby="factureModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content border-0 shadow">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title" id="factureModalLabel">
+                    <i class="bi bi-receipt me-2"></i> Ajouter une Facture
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form method="post">
+                    {% csrf_token %}
+                    {{ form|crispy }}
+                    <div class="d-flex justify-content-end gap-2 mt-3">
+                        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
+                            <i class="bi bi-x-circle"></i> Annuler
+                        </button>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-check-circle"></i> Enregistrer
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    // Graphe CA mensuel
+    const ctx1 = document.getElementById("facturesChart");
+    new Chart(ctx1, {
+        type: "line",
+        data: {
+            labels: {{ labels|safe }},
+            datasets: [{
+                label: "CA (GNF)",
+                data: {{ serie_ventes|safe }},
+                borderColor: "#3498db",
+                backgroundColor: "rgba(52,152,219,0.3)",
+                fill: true,
+                tension: 0.3
+            }]
+        },
+        options: { responsive: true }
+    });
+
+    // Graphe par type (Achat vs Vente)
+    const ctx2 = document.getElementById("typesChart");
+    new Chart(ctx2, {
+        type: "doughnut",
+        data: {
+            labels: {{ chart_types.labels|safe }},
+            datasets: [{
+                data: {{ chart_types.data|safe }},
+                backgroundColor: ["#e74c3c", "#2ecc71"]
+            }]
+        },
+        options: { responsive: true }
+    });
+</script>
+{% endblock %}

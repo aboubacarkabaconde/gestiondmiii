@@ -1,0 +1,16 @@
+{% extends 'base.html' %}
+{% block title %}Supprimer Produit - {{ produit.nom }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <h1 class="section-title text-danger"><i class="bi bi-trash me-2"></i>Supprimer produit</h1>
+    <div class="alert alert-warning">
+        <p>Êtes-vous sûr de vouloir supprimer le produit <strong>{{ produit.nom }}</strong> ?</p>
+    </div>
+    <form method="post">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-danger">Oui, supprimer</button>
+        <a href="{% url 'produits:liste' %}" class="btn btn-secondary">Annuler</a>
+    </form>
+</div>
+{% endblock %}

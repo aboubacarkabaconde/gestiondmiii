@@ -1,0 +1,94 @@
+{% extends 'base.html' %} 
+{% block title %}Détails Facture #{{ facture.id }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+
+    <!-- En-tête Facture -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="section-title text-primary">
+            <i class="bi bi-receipt me-2"></i> Facture #{{ facture.id }}
+        </h1>
+        <a href="{% url 'factures:liste' %}" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left"></i> Retour
+        </a>
+    </div>
+
+    <!-- Infos Facture -->
+    <div class="card shadow-sm border-0 mb-4">
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <p><strong>Type :</strong>
+                        {% if facture.is_achat %}
+                            <span class="badge bg-danger">Achat</span>
+                        {% else %}
+                            <span class="badge bg-success">Vente</span>
+                        {% endif %}
+                    </p>
+                    <p><strong>Client/Fournisseur :</strong> {{ facture.client_fournisseur|default:"-" }}</p>
+                    <p><strong>Site :</strong> {{ facture.site.nom }}</p>
+                    <p><strong>Date :</strong> {{ facture.date|date:"d/m/Y" }}</p>
+                </div>
+                <div class="col-md-6">
+                    <p><strong>Produit :</strong> {{ facture.produit.nom }}</p>
+                    <p><strong>Quantité :</strong> {{ facture.quantite }} {{ facture.produit.unite }}</p>
+                    <p><strong>Prix Unitaire :</strong> {{ facture.prix_unitaire }} FG</p>
+                    <p><strong>Total :</strong> <span class="badge bg-primary">{{ facture.total }} FG</span></p>
+                    <p><strong>Montant Payé :</strong> <span class="badge bg-info">{{ facture.montant_paye }} FG</span></p>
+                    <p><strong>Statut :</strong>
+                        {% if facture.status == "payee" %}
+                            <span class="badge bg-success">Payée</span>
+                        {% elif facture.status == "partielle" %}
+                            <span class="badge bg-warning text-dark">Payée Partiellement</span>
+                        {% else %}
+                            <span class="badge bg-danger">Impayée</span>
+                        {% endif %}
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Liste des Paiements -->
+    <div class="card shadow-sm border-0">
+        <div class="card-header bg-white d-flex justify-content-between align-items-center">
+            <h5 class="mb-0"><i class="bi bi-cash-coin me-2"></i> Paiements</h5>
+            <a href="{% url 'factures:paiement' facture.id %}" class="btn btn-sm btn-success">
+                <i class="bi bi-plus-circle"></i> Ajouter Paiement
+            </a>
+        </div>
+        <div class="card-body table-responsive">
+            {% if paiements %}
+            <table class="table table-hover align-middle">
+                <thead class="table-light">
+                    <tr>
+                        <th>Produit</th>
+                        <th>Quantité</th>
+                        <th>PU</th>
+                        <th>Montant</th>
+                        <th>Mode</th>
+                        <th>Date</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for paiement in paiements %}
+                    <tr>
+                        <td>{{ paiement.produit.nom }}</td>
+                        <td>{{ paiement.quantite }}</td>
+                        <td>{{ paiement.prix_unitaire }} FG</td>
+                        <td><strong>{{ paiement.montant_total }} FG</strong></td>
+                        <td>{{ paiement.get_mode_paiement_display }}</td>
+                        <td>{{ paiement.date_paiement|date:"d/m/Y" }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <p class="text-muted text-center my-3">Aucun paiement enregistré pour cette facture.</p>
+            {% endif %}
+        </div>
+    </div>
+
+</div>
+{% endblock %}

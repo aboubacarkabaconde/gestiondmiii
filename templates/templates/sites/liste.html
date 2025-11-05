@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+{% block title %}Sites - Gestion D.M.I{% endblock %}
+{% block content %}
+<div class="container-fluid">
+  <div class="d-flex flex-wrap justify-content-between align-items-center mb-4">
+    <h1 class="section-title mb-3 mb-md-0"><i class="bi bi-geo-alt me-2"></i>Sites</h1>
+    <a class="btn btn-primary" href="{% url 'sites:ajouter' %}"><i class="bi bi-plus-lg me-1"></i>Nouveau site</a>
+  </div>
+  <div class="card dashboard-card">
+    <div class="card-header bg-white d-flex justify-content-between align-items-center">
+      <h5 class="card-title mb-0">Liste des sites</h5><span class="badge bg-primary">{{ sites|length }}</span>
+    </div>
+    <div class="card-body">
+      {% if sites %}
+      <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+          <thead class="table-light"><tr><th>#</th><th>Nom</th><th>Localisation</th><th>Contact</th><th class="text-end">Actions</th></tr></thead>
+          <tbody>{% for s in sites %}
+            <tr><td>{{ s.id }}</td><td class="fw-bold">{{ s.nom }}</td><td>{{ s.localisation|default:"—" }}</td><td><small class="text-muted">{{ s.contact|default:"—" }}</small></td>
+              <td class="text-end">
+                <div class="btn-group btn-group-sm">
+                  <a class="btn btn-outline-warning" href="{% url 'sites:modifier' s.id %}"><i class="bi bi-pencil"></i></a>
+                  <a class="btn btn-outline-danger" href="{% url 'sites:supprimer' s.id %}"><i class="bi bi-trash"></i></a>
+                </div>
+              </td></tr>
+          {% endfor %}</tbody>
+        </table>
+      </div>
+      {% else %}
+        <div class="text-center py-5"><i class="bi bi-geo-alt display-1 text-muted"></i>
+          <h4 class="text-muted mt-3">Aucun site</h4>
+          <a class="btn btn-primary mt-2" href="{% url 'sites:ajouter' %}"><i class="bi bi-plus-lg me-1"></i>Créer un site</a>
+        </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

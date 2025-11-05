@@ -1,0 +1,32 @@
+{% extends 'base.html' %}
+{% block title %}Production - Gestion D.M.I{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between mb-4">
+        <h1 class="section-title text-primary"><i class="bi bi-cpu"></i> Production</h1>
+        <a href="{% url 'production:ajouter_production' %}" class="btn btn-primary shadow"><i class="bi bi-plus-circle"></i> Nouvelle Production</a>
+    </div>
+
+    <div class="card shadow-sm border-0 mb-4">
+        <div class="card-body">
+            <table class="table table-hover align-middle">
+                <thead class="table-primary"><tr><th>Date</th><th>Produit</th><th>Quantité</th><th>Site</th><th>Actions</th></tr></thead>
+                <tbody>
+                    {% for prod in productions %}
+                    <tr>
+                        <td>{{ prod.date|date:"d/m/Y" }}</td>
+                        <td>{{ prod.produit.nom }}</td>
+                        <td>{{ prod.quantite }}</td>
+                        <td>{{ prod.site }}</td>
+                        <td>
+                            <a href="{% url 'production:supprimer_production' prod.id %}" class="btn btn-sm btn-danger"><i class="bi bi-trash"></i></a>
+                        </td>
+                    </tr>
+                    {% empty %}<tr><td colspan="5" class="text-center">Aucune production</td></tr>{% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

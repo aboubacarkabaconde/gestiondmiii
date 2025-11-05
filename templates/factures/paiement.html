@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="mb-0">💳 Ajouter un paiement à la facture n°{{ facture.id }}</h2>
+        <a href="{% url 'factures:detail' facture.id %}" class="btn btn-secondary">
+            <i class="bi bi-arrow-left"></i> Retour à la facture
+        </a>
+    </div>
+
+    <div class="card shadow-sm border-0">
+        <div class="card-body">
+            <form method="post" novalidate>
+                {% csrf_token %}
+                {{ form.as_p }}
+                <div class="d-flex justify-content-end mt-3">
+                    <a href="{% url 'factures:detail' facture.id %}" class="btn btn-outline-secondary me-2">Annuler</a>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-check-circle"></i> Enregistrer
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+{% block title %}Nouvelle Consommation{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <h1 class="section-title text-warning"><i class="bi bi-plus-circle me-2"></i> Nouvelle Consommation</h1>
+    <div class="card shadow-sm border-0">
+        <div class="card-body">
+            <form method="post">
+                {% csrf_token %}
+                {{ form|crispy }}
+                <div class="d-flex justify-content-end gap-2 mt-3">
+                    <a href="{% url 'production:liste_consommations' %}" class="btn btn-outline-secondary">Annuler</a>
+                    <button type="submit" class="btn btn-warning">Enregistrer</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

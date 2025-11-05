@@ -1,0 +1,16 @@
+{% extends 'base.html' %}
+{% block title %}Supprimer consommation - Gestion D.M.I{% endblock %}
+{% block content %}
+<div class="container-fluid">
+  <div class="card dashboard-card border-0"><div class="card-body">
+    <div class="alert alert-warning">
+      <h5 class="alert-heading"><i class="bi bi-exclamation-triangle me-2"></i>Confirmer la suppression</h5>
+      <p>Supprimer la consommation <strong>#{{ conso.id }}</strong> ?</p>
+      <div class="d-flex gap-2">
+        <form method="post">{% csrf_token %}<button class="btn btn-danger"><i class="bi bi-trash"></i> Supprimer</button></form>
+        <a href="{% url 'production:liste_matieres' %}" class="btn btn-secondary">Annuler</a>
+      </div>
+    </div>
+  </div></div>
+</div>
+{% endblock %}

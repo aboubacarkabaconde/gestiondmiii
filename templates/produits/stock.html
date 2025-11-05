@@ -1,0 +1,169 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+
+    <!-- En-tête -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="mb-0">📦 Gestion du Stock</h2>
+        <a href="{% url 'depenses:liste' %}" class="btn btn-secondary">
+            <i class="bi bi-arrow-left"></i> Retour
+        </a>
+    </div>
+
+    <!-- KPIs -->
+    <div class="row mb-4">
+        <div class="col-md-4 mb-3">
+            <div class="card shadow-sm border-0">
+                <div class="card-body text-center">
+                    <h6 class="text-muted">Total Matières Premières</h6>
+                    <h3 class="fw-bold text-primary">{{ total_mp|floatformat:2 }}</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-3">
+            <div class="card shadow-sm border-0">
+                <div class="card-body text-center">
+                    <h6 class="text-muted">Total Produits Finis</h6>
+                    <h3 class="fw-bold text-success">{{ total_pf|floatformat:2 }}</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-3">
+            <div class="card shadow-sm border-0">
+                <div class="card-body text-center">
+                    <h6 class="text-muted">Valeur Globale du Stock</h6>
+                    <h3 class="fw-bold text-danger">{{ valeur_globale|floatformat:2 }}</h3>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Graphiques -->
+    <div class="row mb-4">
+        <div class="col-md-6 mb-3">
+            <div class="card shadow-sm border-0">
+                <div class="card-body">
+                    <h5 class="card-title">Répartition MP / PF</h5>
+                    <canvas id="chartType"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 mb-3">
+            <div class="card shadow-sm border-0">
+                <div class="card-body">
+                    <h5 class="card-title">Stock par Site</h5>
+                    <canvas id="chartSite"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tableau -->
+    <div class="card shadow-sm border-0">
+        <div class="card-body">
+            <h5 class="card-title">Produits et Quantités disponibles</h5>
+            <div class="table-responsive">
+                <table class="table table-striped align-middle">
+                    <thead class="table-primary">
+                        <tr>
+                            <th>Nom</th>
+                            <th>Type</th>
+                            <th>Unité</th>
+                            <th>Site</th>
+                            <th class="text-end">Quantité en Stock</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for produit in page_obj %}
+                        <tr>
+                            <td>{{ produit.nom }}</td>
+                            <td>
+                                {% if produit.type == "MP" %}
+                                    Matière Première
+                                {% else %}
+                                    Produit Fini
+                                {% endif %}
+                            </td>
+                            <td>{{ produit.unite }}</td>
+                            <td>{{ produit.site.nom }}</td>
+                            <td class="text-end fw-bold">{{ produit.quantite_stock|floatformat:2 }}</td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="5" class="text-center text-muted">Aucun produit trouvé.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Pagination -->
+            <nav aria-label="Pagination produits">
+                <ul class="pagination justify-content-center mt-3">
+                    {% if page_obj.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.previous_page_number }}">Précédent</a>
+                    </li>
+                    {% else %}
+                    <li class="page-item disabled"><span class="page-link">Précédent</span></li>
+                    {% endif %}
+
+                    {% for num in page_obj.paginator.page_range %}
+                        {% if page_obj.number == num %}
+                            <li class="page-item active"><span class="page-link">{{ num }}</span></li>
+                        {% else %}
+                            <li class="page-item"><a class="page-link" href="?page={{ num }}">{{ num }}</a></li>
+                        {% endif %}
+                    {% endfor %}
+
+                    {% if page_obj.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.next_page_number }}">Suivant</a>
+                    </li>
+                    {% else %}
+                    <li class="page-item disabled"><span class="page-link">Suivant</span></li>
+                    {% endif %}
+                </ul>
+            </nav>
+        </div>
+    </div>
+</div>
+
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    // Répartition MP/PF
+    new Chart(document.getElementById("chartType"), {
+        type: "doughnut",
+        data: {
+            labels: {{ repartition_type.labels|safe|escapejs }},
+            datasets: [{
+                data: {{ repartition_type.data|safe|escapejs }},
+                backgroundColor: ["#007bff", "#28a745"]
+            }]
+        }
+    });
+
+    // Répartition par site
+    new Chart(document.getElementById("chartSite"), {
+        type: "bar",
+        data: {
+            labels: {{ repartition_sites.labels|safe|escapejs }},
+            datasets: [{
+                label: "Quantité en stock",
+                data: {{ repartition_sites.data|safe|escapejs }},
+                backgroundColor: "#ffc107"
+            }]
+        },
+        options: {
+            scales: {
+                y: { beginAtZero: true }
+            }
+        }
+    });
+});
+</script>
+{% endblock %}

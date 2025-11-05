@@ -1,0 +1,30 @@
+{% comment %} _includes/_theme_css.html {% endcomment %}
+<style>
+  :root {
+    --primary-color:#2c3e50;
+    --secondary-color:#3498db;
+    --accent-color:#e74c3c;
+    --bg:#f5f7f9;
+    --card-bg:#ffffff;
+    --text:#1f2937;
+    --muted:#6b7280;
+    --border:#e5e7eb;
+  }
+  html[data-theme="dark"] {
+    --primary-color:#111827;
+    --secondary-color:#3b82f6;
+    --accent-color:#ef4444;
+    --bg:#0b1220;
+    --card-bg:#0f172a;
+    --text:#e5e7eb;
+    --muted:#94a3b8;
+    --border:#1f2937;
+  }
+  body{ background:var(--bg); color:var(--text); }
+  .navbar{ background:var(--primary-color)!important; }
+  .card.dashboard-card{ background:var(--card-bg); border-color:var(--border); }
+  .table{ color:var(--text); }
+  .table thead{ background:rgba(0,0,0,.03); }
+  html[data-theme="dark"] .table thead{ background:rgba(255,255,255,.05); }
+  .section-title{ border-left:4px solid var(--secondary-color); }
+</style>

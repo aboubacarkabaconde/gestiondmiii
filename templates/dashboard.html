@@ -1,0 +1,199 @@
+{% extends 'base.html' %}
+
+{% block title %}Tableau de Bord - Gestion D.M.I{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- En-tête Bienvenue -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card welcome-card shadow-sm border-0">
+                <div class="card-body">
+                    <div class="row align-items-center">
+                        <div class="col-md-8">
+                            <h2 class="card-title">Bienvenue, {{ request.user.username }} 👋</h2>
+                            <p class="card-text mb-0">Tableau de bord de gestion de votre PME</p>
+                            <small>Aujourd'hui : {% now "l d F Y" %}</small>
+                        </div>
+                        <div class="col-md-4 text-end">
+                            <i class="bi bi-graph-up-arrow display-1 opacity-50"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Cartes Statistiques -->
+    <div class="row mb-4">
+        <div class="col-md-3 col-6 mb-3">
+            <div class="card dashboard-card text-center text-danger">
+                <div class="card-body">
+                    <i class="bi bi-cash-coin card-icon"></i>
+                    <h3 class="stats-number">{{ depenses_mois|default:"0" }} FG</h3>
+                    <p class="card-text">Dépenses du Mois</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 col-6 mb-3">
+            <div class="card dashboard-card text-center text-success">
+                <div class="card-body">
+                    <i class="bi bi-graph-up card-icon"></i>
+                    <h3 class="stats-number">{{ ca_mois|default:"0" }} FG</h3>
+                    <p class="card-text">Chiffre d'Affaires</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 col-6 mb-3">
+            <div class="card dashboard-card text-center text-warning">
+                <div class="card-body">
+                    <i class="bi bi-exclamation-triangle card-icon"></i>
+                    <h3 class="stats-number">{{ alertes_stock|default:"0" }}</h3>
+                    <p class="card-text">Alertes Stock</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 col-6 mb-3">
+            <div class="card dashboard-card text-center text-primary">
+                <div class="card-body">
+                    <i class="bi bi-people card-icon"></i>
+                    <h3 class="stats-number">{{ total_employes|default:"0" }}</h3>
+                    <p class="card-text">Employés Actifs</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Actions rapides -->
+    <div class="row mb-4">
+        <div class="col-md-3 mb-3">
+            <a href="{% url 'depenses:ajouter' %}" class="btn btn-outline-danger w-100 shadow-sm">
+                <i class="bi bi-plus-circle display-6 d-block"></i> Nouvelle Dépense
+            </a>
+        </div>
+        <div class="col-md-3 mb-3">
+            <a href="{% url 'factures:ajouter' %}" class="btn btn-outline-success w-100 shadow-sm">
+                <i class="bi bi-plus-circle display-6 d-block"></i> Nouvelle Facture
+            </a>
+        </div>
+        <div class="col-md-3 mb-3">
+            <a href="{% url 'production:ajouter_production' %}" class="btn btn-outline-primary w-100 shadow-sm">
+                <i class="bi bi-plus-circle display-6 d-block"></i> Nouvelle Production
+            </a>
+        </div>
+        <div class="col-md-3 mb-3">
+            <a href="{% url 'sites:ajouter' %}" class="btn btn-outline-warning w-100 shadow-sm">
+                <i class="bi bi-plus-circle display-6 d-block"></i> Nouveau Site
+            </a>
+        </div>
+    </div>
+
+    <!-- Graphiques -->
+    <div class="row mb-4">
+        <div class="col-md-6 mb-3">
+            <div class="card dashboard-card p-3 shadow-sm">
+                <h6 class="text-center text-danger">Évolution Dépenses (6 derniers mois)</h6>
+                <canvas id="depensesChart"></canvas>
+            </div>
+        </div>
+        <div class="col-md-6 mb-3">
+            <div class="card dashboard-card p-3 shadow-sm">
+                <h6 class="text-center text-success">Évolution Ventes (6 derniers mois)</h6>
+                <canvas id="ventesChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- Dernières activités -->
+    <div class="row mb-4">
+        <!-- Dépenses -->
+        <div class="col-md-6 mb-3">
+            <div class="card dashboard-card h-100">
+                <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0"><i class="bi bi-cash-coin me-2"></i>Dernières Dépenses</h5>
+                    <a href="{% url 'depenses:liste' %}" class="btn btn-sm btn-outline-primary">Voir tout</a>
+                </div>
+                <div class="card-body">
+                    {% if dernieres_depenses %}
+                        <ul class="list-group list-group-flush">
+                            {% for depense in dernieres_depenses %}
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                <span>{{ depense.type_depense }} - {{ depense.date|date:"d/m/Y" }}</span>
+                                <span class="badge bg-danger">{{ depense.montant }} FG</span>
+                            </li>
+                            {% endfor %}
+                        </ul>
+                    {% else %}
+                        <p class="text-muted text-center">Aucune dépense récente</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Factures -->
+        <div class="col-md-6 mb-3">
+            <div class="card dashboard-card h-100">
+                <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0"><i class="bi bi-receipt me-2"></i>Dernières Factures</h5>
+                    <a href="{% url 'factures:liste' %}" class="btn btn-sm btn-outline-primary">Voir tout</a>
+                </div>
+                <div class="card-body">
+                    {% if dernieres_factures %}
+                        <ul class="list-group list-group-flush">
+                            {% for facture in dernieres_factures %}
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                <span>#{{ facture.id }} - {{ facture.date|date:"d/m/Y" }}</span>
+                                <span class="badge bg-success">{{ facture.total }} FG</span>
+                            </li>
+                            {% endfor %}
+                        </ul>
+                    {% else %}
+                        <p class="text-muted text-center">Aucune facture récente</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    const chartData = {{ chart_data_json|safe }};
+
+    // Dépenses
+    new Chart(document.getElementById("depensesChart"), {
+        type: "line",
+        data: {
+            labels: chartData.labels,
+            datasets: [{
+                label: "Dépenses (GNF)",
+                data: chartData.depenses,
+                borderColor: "#e74c3c",
+                backgroundColor: "rgba(231,76,60,0.3)",
+                fill: true,
+                tension: 0.3
+            }]
+        },
+        options: { responsive: true }
+    });
+
+    // Ventes
+    new Chart(document.getElementById("ventesChart"), {
+        type: "line",
+        data: {
+            labels: chartData.labels,
+            datasets: [{
+                label: "Ventes (GNF)",
+                data: chartData.ventes,
+                borderColor: "#2ecc71",
+                backgroundColor: "rgba(46,204,113,0.3)",
+                fill: true,
+                tension: 0.3
+            }]
+        },
+        options: { responsive: true }
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,51 @@
+{% extends 'base.html' %}
+{% block title %}Production - Gestion D.M.I{% endblock %}
+{% block content %}
+<div class="container-fluid">
+  <div class="d-flex flex-wrap justify-content-between align-items-center mb-4">
+    <h1 class="section-title mb-3 mb-md-0"><i class="bi bi-cpu me-2"></i>Production</h1>
+    <div class="d-flex gap-2">
+      <a class="btn btn-outline-dark" href="{% url 'production:consommation_ajouter' %}"><i class="bi bi-basket me-1"></i>Consommation MP</a>
+      <a class="btn btn-primary" href="{% url 'production:ajouter' %}"><i class="bi bi-plus-circle me-1"></i>Nouvelle production</a>
+    </div>
+  </div>
+
+  <div class="row g-3">
+    <div class="col-12 col-xl-7">
+      <div class="card dashboard-card"><div class="card-header bg-white d-flex justify-content-between align-items-center">
+        <h5 class="card-title mb-0">Productions</h5><span class="badge bg-primary">{{ productions|length }}</span>
+      </div><div class="card-body">
+        {% if productions %}
+        <div class="table-responsive">
+          <table class="table align-middle table-hover">
+            <thead class="table-light"><tr><th>#</th><th>Site</th><th>Produit fini</th><th>Qté</th><th>Date</th><th class="text-end">Actions</th></tr></thead>
+            <tbody>{% for p in productions %}
+              <tr><td>{{ p.id }}</td><td>{{ p.site.nom }}</td><td>{{ p.produit_fini.nom }}</td><td class="fw-bold">{{ p.quantite_produite }}</td><td>{{ p.date|date:"d/m/Y" }}</td>
+                <td class="text-end"><a class="btn btn-sm btn-outline-danger" href="{% url 'production:supprimer' p.id %}"><i class="bi bi-trash"></i></a></td></tr>
+            {% endfor %}</tbody>
+          </table>
+        </div>
+        {% else %}<div class="text-center py-5 text-muted">Aucune production.</div>{% endif %}
+      </div></div>
+    </div>
+
+    <div class="col-12 col-xl-5">
+      <div class="card dashboard-card"><div class="card-header bg-white d-flex justify-content-between align-items-center">
+        <h5 class="card-title mb-0">Consommations MP (récentes)</h5><span class="badge bg-secondary">{{ consommations|length }}</span>
+      </div><div class="card-body">
+        {% if consommations %}
+        <div class="table-responsive">
+          <table class="table align-middle">
+            <thead class="table-light"><tr><th>#</th><th>MP</th><th>Qté</th><th>Prod</th><th class="text-end">Actions</th></tr></thead>
+            <tbody>{% for c in consommations %}
+              <tr><td>{{ c.id }}</td><td>{{ c.produit_mp.nom }}</td><td class="fw-bold">{{ c.quantite_utilisee }}</td><td>#{{ c.production.id }}</td>
+                <td class="text-end"><a class="btn btn-sm btn-outline-danger" href="{% url 'production:consommation_supprimer' c.id %}"><i class="bi bi-trash"></i></a></td></tr>
+            {% endfor %}</tbody>
+          </table>
+        </div>
+        {% else %}<div class="text-center py-5 text-muted">Aucune consommation.</div>{% endif %}
+      </div></div>
+    </div>
+  </div>
+</div>
+{% endblock %}

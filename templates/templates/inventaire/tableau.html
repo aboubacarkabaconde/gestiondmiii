@@ -1,0 +1,39 @@
+{% extends 'base.html' %}
+{% block title %}Inventaire - Gestion D.M.I{% endblock %}
+{% block content %}
+<div class="container-fluid">
+  <h1 class="section-title mb-4"><i class="bi bi-boxes me-2"></i>Tableau d’inventaire</h1>
+  <div class="card dashboard-card mb-3"><div class="card-body">
+    <form method="get" class="row g-3 align-items-end">
+      <div class="col-12 col-md-4"><label class="form-label">Site</label>
+        <select name="site" class="form-select" onchange="this.form.submit()"><option value="">Tous</option>
+          {% for s in sites %}<option value="{{ s.id }}" {% if request.GET.site == s.id|stringformat:'s' %}selected{% endif %}>{{ s.nom }}</option>{% endfor %}
+        </select>
+      </div>
+      <div class="col-12 col-md-4"><label class="form-label">Type</label>
+        <select name="type" class="form-select" onchange="this.form.submit()">
+          <option value="">Tous</option><option value="MP" {% if request.GET.type == 'MP' %}selected{% endif %}>Matière première</option>
+          <option value="PF" {% if request.GET.type == 'PF' %}selected{% endif %}>Produit fini</option>
+        </select>
+      </div>
+      <div class="col-12 col-md-4"><label class="form-label">Recherche</label><input type="text" name="q" class="form-control" value="{{ request.GET.q }}" placeholder="Nom produit…"></div>
+    </form>
+  </div></div>
+
+  <div class="card dashboard-card"><div class="card-header bg-white"><h5 class="card-title mb-0">Stocks</h5></div>
+    <div class="card-body">
+      {% if produits %}
+      <div class="table-responsive">
+        <table class="table table-hover align-middle">
+          <thead class="table-light"><tr><th>Produit</th><th>Type</th><th>Unité</th><th>Qté dispo</th><th>Stock restant</th><th>Site</th></tr></thead>
+          <tbody>{% for p in produits %}
+            <tr><td class="fw-bold">{{ p.nom }}</td><td>{{ p.get_type_display }}</td><td>{{ p.unite }}</td>
+              <td>{{ p.quantite_disponible }}</td><td>{% if p.stock %}{{ p.stock.quantite_restante }}{% else %}—{% endif %}</td><td>{{ p.site.nom }}</td></tr>
+          {% endfor %}</tbody>
+        </table>
+      </div>
+      {% else %}<div class="text-center py-5 text-muted">Aucun produit.</div>{% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

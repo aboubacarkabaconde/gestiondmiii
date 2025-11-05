@@ -1,0 +1,143 @@
+{% extends 'base.html' %}
+{% block title %}Employés - Gestion D.M.I{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+
+  <!-- En-tête -->
+  <div class="d-flex flex-wrap justify-content-between align-items-center mb-4">
+    <h1 class="section-title mb-3 mb-md-0">
+      <i class="bi bi-people me-2"></i>Gestion des Employés
+    </h1>
+    <a href="{% url 'personnel:ajouter' %}" class="btn btn-primary">
+      <i class="bi bi-person-plus me-1"></i>Nouvel Employé
+    </a>
+  </div>
+
+  <!-- Filtres + Stat -->
+  <div class="row g-3 mb-4">
+    <div class="col-12 col-lg-8">
+      <div class="card dashboard-card">
+        <div class="card-body">
+          <form method="get" class="row g-3 align-items-end">
+            <div class="col-12 col-md-4">
+              <label class="form-label">Site</label>
+              <select name="site" class="form-select" onchange="this.form.submit()">
+                <option value="">Tous</option>
+                {% for s in sites %}
+                  <option value="{{ s.id }}" {% if request.GET.site == s.id|stringformat:'s' %}selected{% endif %}>{{ s.nom }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="col-6 col-md-4">
+              <label class="form-label">Situation matrimoniale</label>
+              <select name="situation" class="form-select" onchange="this.form.submit()">
+                <option value="">Toutes</option>
+                {% for value, label in situations %}
+                  <option value="{{ value }}" {% if request.GET.situation == value %}selected{% endif %}>{{ label }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="col-6 col-md-4">
+              <label class="form-label">Recherche</label>
+              <input type="text" name="q" class="form-control" value="{{ request.GET.q }}" placeholder="Nom, poste, email…">
+            </div>
+
+            <div class="col-6 col-md-2 d-grid">
+              <button class="btn btn-outline-secondary">Filtrer</button>
+            </div>
+            <div class="col-6 col-md-2 d-grid">
+              <a href="?" class="btn btn-outline-dark">Réinitialiser</a>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- Stat total -->
+    <div class="col-12 col-lg-4">
+      <div class="card dashboard-card bg-primary text-white h-100">
+        <div class="card-body d-flex flex-column justify-content-center text-center">
+          <h6 class="card-title">Total Employés</h6>
+          <h3 class="stats-number">{{ employes|length }}</h3>
+          <small class="opacity-75">enregistré(s)</small>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tableau -->
+  <div class="card dashboard-card">
+    <div class="card-header bg-white d-flex justify-content-between align-items-center">
+      <h5 class="card-title mb-0">Liste des Employés</h5>
+      <span class="badge bg-primary">{{ employes|length }} employé(s)</span>
+    </div>
+    <div class="card-body">
+      {% if employes %}
+        <div class="table-responsive">
+          <table class="table table-hover align-middle">
+            <thead class="table-light">
+              <tr>
+                <th>Nom</th>
+                <th>Poste</th>
+                <th>Site</th>
+                <th>Embauche</th>
+                <th>Situation</th>
+                <th>Email</th>
+                <th class="text-end">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for e in employes %}
+              <tr>
+                <td class="fw-bold">{{ e.nom }}</td>
+                <td>{{ e.poste|default:"—" }}</td>
+                <td>{{ e.site.nom|default:"—" }}</td>
+                <td>{{ e.date_embauche|date:"d/m/Y" }}</td>
+                <td>{{ e.get_situation_matrimoniale_display }}</td>
+                <td><small class="text-muted">{{ e.user.email|default:"—" }}</small></td>
+                <td class="text-end">
+                  <div class="btn-group btn-group-sm">
+                    <a href="{% url 'personnel:modifier' e.id %}" class="btn btn-outline-warning" title="Modifier">
+                      <i class="bi bi-pencil"></i>
+                    </a>
+                    <a href="{% url 'personnel:supprimer' e.id %}" class="btn btn-outline-danger" title="Supprimer">
+                      <i class="bi bi-trash"></i>
+                    </a>
+                  </div>
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+
+        {# Pagination optionnelle #}
+        {% if page_obj %}
+        <nav class="mt-3">
+          <ul class="pagination justify-content-end">
+            {% if page_obj.has_previous %}
+              <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}">Précédent</a></li>
+            {% endif %}
+            <li class="page-item disabled"><span class="page-link">Page {{ page_obj.number }} / {{ page_obj.paginator.num_pages }}</span></li>
+            {% if page_obj.has_next %}
+              <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}">Suivant</a></li>
+            {% endif %}
+          </ul>
+        </nav>
+        {% endif %}
+
+      {% else %}
+        <div class="text-center py-5">
+          <i class="bi bi-people display-1 text-muted"></i>
+          <h4 class="text-muted mt-3">Aucun employé</h4>
+          <p class="text-muted">Ajoutez votre premier employé pour commencer.</p>
+          <a href="{% url 'personnel:ajouter' %}" class="btn btn-primary">
+            <i class="bi bi-person-plus me-1"></i>Nouvel Employé
+          </a>
+        </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+{% block title %}Supprimer Production{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <h1 class="section-title text-danger"><i class="bi bi-trash me-2"></i> Supprimer Production</h1>
+
+    <div class="alert alert-warning">
+        <p>
+            Êtes-vous sûr de vouloir supprimer la production de
+            <strong>{{ production.produit_fini.nom }}</strong>
+            du {{ production.date|date:"d/m/Y" }}
+            ({{ production.quantite_produite }} {{ production.produit_fini.unite }}) ?
+        </p>
+    </div>
+
+    <form method="post">
+        {% csrf_token %}
+        <div class="d-flex justify-content-end gap-2">
+            <a href="{% url 'production:liste_productions' %}" class="btn btn-secondary">Annuler</a>
+            <button type="submit" class="btn btn-danger">Oui, supprimer</button>
+        </div>
+    </form>
+</div>
+{% endblock %}

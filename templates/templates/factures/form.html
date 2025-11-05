@@ -1,0 +1,60 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+{% block title %}Nouvelle Facture{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Titre -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="section-title text-primary">
+            <i class="bi bi-receipt me-2"></i> Nouvelle Facture
+        </h1>
+        <a href="{% url 'factures:liste' %}" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left"></i> Retour
+        </a>
+    </div>
+
+    <!-- Formulaire -->
+    <div class="card shadow-sm border-0">
+        <div class="card-body">
+            <form method="post" id="factureForm">
+                {% csrf_token %}
+                {{ form|crispy }}
+
+                <!-- Champ total (calculé automatiquement en JS) -->
+                <div class="mb-3">
+                    <label class="form-label">Total (GNF)</label>
+                    <input type="text" id="totalField" class="form-control" readonly>
+                </div>
+
+                <div class="d-flex justify-content-end gap-2 mt-3">
+                    <a href="{% url 'factures:liste' %}" class="btn btn-outline-secondary">Annuler</a>
+                    <button type="submit" class="btn btn-primary">Enregistrer</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Récupération des champs du formulaire
+    const quantiteInput = document.getElementById("id_quantite");
+    const prixInput = document.getElementById("id_prix_unitaire");
+    const totalField = document.getElementById("totalField");
+
+    function updateTotal() {
+        const qte = parseFloat(quantiteInput.value) || 0;
+        const prix = parseFloat(prixInput.value) || 0;
+        totalField.value = (qte * prix).toFixed(2) + " FG";
+    }
+
+    quantiteInput.addEventListener("input", updateTotal);
+    prixInput.addEventListener("input", updateTotal);
+
+    // Initialisation au chargement de la page
+    updateTotal();
+</script>
+{% endblock %}

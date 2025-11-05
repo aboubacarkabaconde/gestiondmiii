@@ -1,0 +1,20 @@
+{% comment %} _includes/factures/_filters.html {% endcomment %}
+<form method="get" class="row g-3 align-items-end">
+  <div class="col-6 col-md-3"><label class="form-label">Type</label>
+    <select name="type" class="form-select" onchange="this.form.submit()">
+      <option value="">Tous</option>
+      <option value="Vente" {% if request.GET.type == 'Vente' %}selected{% endif %}>Vente</option>
+      <option value="Achat" {% if request.GET.type == 'Achat' %}selected{% endif %}>Achat</option>
+    </select>
+  </div>
+  <div class="col-6 col-md-3"><label class="form-label">Site</label>
+    <select name="site" class="form-select" onchange="this.form.submit()">
+      <option value="">Tous</option>
+      {% for s in sites %}<option value="{{ s.id }}" {% if request.GET.site == s.id|stringformat:'s' %}selected{% endif %}>{{ s.nom }}</option>{% endfor %}
+    </select>
+  </div>
+  <div class="col-6 col-md-3"><label class="form-label">Début</label><input type="date" name="start" value="{{ request.GET.start }}" class="form-control"></div>
+  <div class="col-6 col-md-3"><label class="form-label">Fin</label><input type="date" name="end" value="{{ request.GET.end }}" class="form-control"></div>
+  <div class="col-6 col-md-2 d-grid"><button class="btn btn-outline-secondary">Filtrer</button></div>
+  <div class="col-6 col-md-2 d-grid"><a href="?" class="btn btn-outline-dark">Réinitialiser</a></div>
+</form>

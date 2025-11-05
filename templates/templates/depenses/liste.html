@@ -1,0 +1,168 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+{% block title %}Liste des Dépenses{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+
+    <!-- En-tête -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="section-title text-danger">
+            <i class="bi bi-cash-coin me-2"></i> Dépenses
+        </h1>
+        <div>
+            <a href="{% url 'depenses:export_csv' %}" class="btn btn-outline-success me-2">
+                <i class="bi bi-file-earmark-excel"></i> Exporter CSV
+            </a>
+            <a href="{% url 'depenses:imprimer' %}" class="btn btn-outline-danger me-2" target="_blank">
+                <i class="bi bi-printer"></i> Imprimer
+            </a>
+            <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#depenseModal">
+                <i class="bi bi-plus-circle"></i> Nouvelle Dépense
+            </button>
+        </div>
+    </div>
+
+    <!-- Statistiques (KPI) -->
+    <div class="row mb-4">
+        <div class="col-md-6 mb-3">
+            <div class="card dashboard-card text-center text-danger">
+                <div class="card-body">
+                    <i class="bi bi-cash-coin card-icon"></i>
+                    <h3 class="stats-number">{{ montant_total|default:"0" }} FG</h3>
+                    <p class="card-text">Montant Total des Dépenses</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 mb-3">
+            <div class="card dashboard-card text-center text-warning">
+                <div class="card-body">
+                    <i class="bi bi-bar-chart-line card-icon"></i>
+                    <h3 class="stats-number">{{ montant_mensuel|default:"0" }} FG</h3>
+                    <p class="card-text">Dépenses du Mois</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tableau des Dépenses -->
+    <div class="card shadow-sm border-0 mb-4">
+        <div class="card-body table-responsive">
+            <table class="table table-hover align-middle">
+                <thead class="table-light">
+                    <tr>
+                        <th>ID</th>
+                        <th>Type</th>
+                        <th>Montant</th>
+                        <th>Site</th>
+                        <th>Employé</th>
+                        <th>Date</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for depense in depenses %}
+                    <tr>
+                        <td>#{{ depense.id }}</td>
+                        <td>
+                            <span class="badge bg-secondary">{{ depense.get_type_depense_display }}</span>
+                        </td>
+                        <td><span class="badge bg-danger">{{ depense.montant }} FG</span></td>
+                        <td>{{ depense.site.nom }}</td>
+                        <td>{{ depense.employe|default:"—" }}</td>
+                        <td>{{ depense.date_depense|date:"d/m/Y" }}</td>
+                        <td>
+                            <a href="{% url 'depenses:modifier' depense.id %}" class="btn btn-sm btn-outline-warning"><i class="bi bi-pencil"></i></a>
+                            <a href="{% url 'depenses:supprimer' depense.id %}" class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="7" class="text-center text-muted">Aucune dépense enregistrée.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Graphiques -->
+    <div class="row mb-4">
+        <div class="col-md-6 mb-3">
+            <div class="card dashboard-card p-3 shadow-sm">
+                <h6 class="text-center text-primary">Évolution des Dépenses (6 derniers mois)</h6>
+                <canvas id="depensesChart"></canvas>
+            </div>
+        </div>
+        <div class="col-md-6 mb-3">
+            <div class="card dashboard-card p-3 shadow-sm">
+                <h6 class="text-center text-primary">Répartition par Type de Dépense</h6>
+                <canvas id="typesDepensesChart"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ================= Modale Ajout Dépense ================= -->
+<div class="modal fade" id="depenseModal" tabindex="-1" aria-labelledby="depenseModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content border-0 shadow">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title" id="depenseModalLabel">
+                    <i class="bi bi-cash-coin me-2"></i> Ajouter une Dépense
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form method="post">
+                    {% csrf_token %}
+                    {{ form|crispy }}
+                    <div class="d-flex justify-content-end gap-2 mt-3">
+                        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
+                            <i class="bi bi-x-circle"></i> Annuler
+                        </button>
+                        <button type="submit" class="btn btn-danger">
+                            <i class="bi bi-check-circle"></i> Enregistrer
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    // Graphe Dépenses Mensuelles
+    new Chart(document.getElementById("depensesChart"), {
+        type: "line",
+        data: {
+            labels: {{ labels|safe }},
+            datasets: [{
+                label: "Dépenses (GNF)",
+                data: {{ serie_depenses|safe }},
+                borderColor: "#e74c3c",
+                backgroundColor: "rgba(231,76,60,0.3)",
+                fill: true,
+                tension: 0.3
+            }]
+        },
+        options: { responsive: true }
+    });
+
+    // Graphe Répartition par Type
+    new Chart(document.getElementById("typesDepensesChart"), {
+        type: "doughnut",
+        data: {
+            labels: {{ chart_types.labels|safe }},
+            datasets: [{
+                data: {{ chart_types.data|safe }},
+                backgroundColor: ["#3498db", "#f1c40f", "#9b59b6", "#2ecc71", "#e67e22"]
+            }]
+        },
+        options: { responsive: true }
+    });
+</script>
+{% endblock %}

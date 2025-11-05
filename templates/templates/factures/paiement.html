@@ -1,0 +1,84 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+{% block title %}Ajouter Paiement - Facture #{{ facture.id }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+
+    <!-- En-tête -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="section-title text-success">
+            <i class="bi bi-cash-coin me-2"></i> Paiement pour Facture #{{ facture.id }}
+        </h1>
+        <a href="{% url 'factures:detail' facture.id %}" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left"></i> Retour à la facture
+        </a>
+    </div>
+
+    <!-- Infos Facture (rappel) -->
+    <div class="card shadow-sm border-0 mb-4">
+        <div class="card-body">
+            <p><strong>Client/Fournisseur :</strong> {{ facture.client_fournisseur|default:"-" }}</p>
+            <p><strong>Total Facture :</strong> <span class="badge bg-primary">{{ facture.total }} FG</span></p>
+            <p><strong>Déjà Payé :</strong> <span class="badge bg-info">{{ facture.montant_paye }} FG</span></p>
+            <p><strong>Statut :</strong>
+                {% if facture.status == "payee" %}
+                    <span class="badge bg-success">Payée</span>
+                {% elif facture.status == "partielle" %}
+                    <span class="badge bg-warning text-dark">Partielle</span>
+                {% else %}
+                    <span class="badge bg-danger">Impayée</span>
+                {% endif %}
+            </p>
+        </div>
+    </div>
+
+    <!-- Formulaire de Paiement -->
+    <div class="card shadow-sm border-0">
+        <div class="card-header bg-white">
+            <h5 class="mb-0"><i class="bi bi-credit-card me-2"></i> Saisir un Paiement</h5>
+        </div>
+        <div class="card-body">
+            <form method="post" id="paiementForm">
+                {% csrf_token %}
+                {{ form|crispy }}
+
+                <div class="d-flex justify-content-end gap-2 mt-3">
+                    <a href="{% url 'factures:detail' facture.id %}" class="btn btn-outline-secondary">
+                        <i class="bi bi-x-circle"></i> Annuler
+                    </a>
+                    <button type="submit" class="btn btn-success">
+                        <i class="bi bi-check-circle"></i> Enregistrer Paiement
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Calcul automatique du montant_total si quantité et prix_unitaire sont présents
+    document.addEventListener("DOMContentLoaded", function() {
+        const qte = document.getElementById("id_quantite");
+        const prix = document.getElementById("id_prix_unitaire");
+        const total = document.getElementById("id_montant_total");
+
+        function updateTotal() {
+            const quantite = parseFloat(qte?.value) || 0;
+            const prixUnit = parseFloat(prix?.value) || 0;
+            if (total) {
+                total.value = (quantite * prixUnit).toFixed(2);
+            }
+        }
+
+        if (qte && prix) {
+            qte.addEventListener("input", updateTotal);
+            prix.addEventListener("input", updateTotal);
+            updateTotal();
+        }
+    });
+</script>
+{% endblock %}

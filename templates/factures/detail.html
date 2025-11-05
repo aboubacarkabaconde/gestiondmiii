@@ -1,0 +1,148 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+
+    <!-- ========================= -->
+    <!-- En-tête -->
+    <!-- ========================= -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="mb-0">🧾 Facture n°{{ facture.id }}</h2>
+        <a href="{% url 'factures:liste' %}" class="btn btn-secondary">
+            <i class="bi bi-arrow-left"></i> Retour à la liste
+        </a>
+    </div>
+
+    <!-- ========================= -->
+    <!-- Infos principales -->
+    <!-- ========================= -->
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="card shadow-sm border-0">
+                <div class="card-body">
+                    <h6 class="text-muted">Type</h6>
+                    <h4 class="fw-bold">{{ facture.type }}</h4>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card shadow-sm border-0">
+                <div class="card-body">
+                    <h6 class="text-muted">Site</h6>
+                    <h4 class="fw-bold">{{ facture.site.nom }}</h4>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card shadow-sm border-0">
+                <div class="card-body">
+                    <h6 class="text-muted">Date</h6>
+                    <h4 class="fw-bold">{{ facture.date|date:"d/m/Y" }}</h4>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========================= -->
+    <!-- Montants -->
+    <!-- ========================= -->
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="card shadow-sm border-0">
+                <div class="card-body">
+                    <h6 class="text-muted">Montant total</h6>
+                    <h4 class="fw-bold text-primary">{{ facture.total|floatformat:2 }} €</h4>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card shadow-sm border-0">
+                <div class="card-body">
+                    <h6 class="text-muted">Montant payé</h6>
+                    <h4 class="fw-bold text-success">{{ facture.montant_paye|floatformat:2 }} €</h4>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card shadow-sm border-0">
+                <div class="card-body">
+                    <h6 class="text-muted">Restant dû</h6>
+                    <h4 class="fw-bold text-danger">
+                        {{ facture.total|floatformat:2|add:"-facture.montant_paye"|floatformat:2 }} €
+                    </h4>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========================= -->
+    <!-- Liste des paiements -->
+    <!-- ========================= -->
+    <div class="card shadow-sm border-0 mb-4">
+        <div class="card-body">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h5 class="card-title mb-0">💳 Paiements</h5>
+                <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#paiementModal">
+                    <i class="bi bi-plus-circle"></i> Ajouter un paiement
+                </button>
+            </div>
+
+            <div class="table-responsive">
+                <table class="table table-striped align-middle">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Produit</th>
+                            <th>Quantité</th>
+                            <th class="text-end">Prix unitaire (€)</th>
+                            <th class="text-end">Montant (€)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for paiement in paiements %}
+                        <tr>
+                            <td>{{ paiement.date|date:"d/m/Y" }}</td>
+                            <td>{{ paiement.produit }}</td>
+                            <td>{{ paiement.quantite }}</td>
+                            <td class="text-end">{{ paiement.prix_unitaire|floatformat:2 }}</td>
+                            <td class="text-end">{{ paiement.montant_total|floatformat:2 }}</td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="5" class="text-center text-muted">Aucun paiement enregistré.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<!-- ========================= -->
+<!-- Modale Ajout Paiement -->
+<!-- ========================= -->
+<div class="modal fade" id="paiementModal" tabindex="-1" aria-labelledby="paiementModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form method="post" action="{% url 'factures:enregistrer_paiement' facture.id %}" novalidate>
+        {% csrf_token %}
+        <div class="modal-header">
+          <h5 class="modal-title" id="paiementModalLabel">Ajouter un Paiement</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          {{ form.as_p }}
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+          <button type="submit" class="btn btn-primary">Enregistrer</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+{% endblock %}

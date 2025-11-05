@@ -1,0 +1,49 @@
+{% extends 'base.html' %}
+{% block title %}Recherche - Gestion D.M.I{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+  <div class="card dashboard-card mb-3">
+    <div class="card-body">
+      <form method="get" class="row g-2">
+        <div class="col-12 col-md-5"><input name="q" value="{{ q }}" class="form-control" placeholder="Terme de recherche…"></div>
+        <div class="col-6 col-md-2"><input name="start" value="{{ start|date:'Y-m-d' }}" type="date" class="form-control"></div>
+        <div class="col-6 col-md-2"><input name="end"   value="{{ end|date:'Y-m-d' }}"   type="date" class="form-control"></div>
+        <div class="col-12 col-md-2">
+          <select name="model" class="form-select">
+            <option value="">Tous</option>
+            <option value="factures"  {% if model == 'factures' %}selected{% endif %}>Factures</option>
+            <option value="paiements" {% if model == 'paiements' %}selected{% endif %}>Paiements</option>
+            <option value="depenses"  {% if model == 'depenses' %}selected{% endif %}>Dépenses</option>
+            <option value="produits"  {% if model == 'produits' %}selected{% endif %}>Produits</option>
+            <option value="production"{% if model == 'production' %}selected{% endif %}>Production</option>
+            <option value="sites"     {% if model == 'sites' %}selected{% endif %}>Sites</option>
+            <option value="employes"  {% if model == 'employes' %}selected{% endif %}>Employés</option>
+          </select>
+        </div>
+        <div class="col-12 col-md-1 d-grid"><button class="btn btn-primary">OK</button></div>
+      </form>
+    </div>
+  </div>
+
+  <p class="text-muted small">{{ total_count }} résultat(s).</p>
+
+  {% for section, items in results.items %}
+    {% if items %}
+      <div class="card dashboard-card mb-3">
+        <div class="card-header text-capitalize">{{ section }}</div>
+        <ul class="list-group list-group-flush">
+          {% for obj in items %}
+            <li class="list-group-item small d-flex justify-content-between align-items-center">
+              <span>{{ obj }}</span>
+              {% if section == 'factures' %}
+                <a class="btn btn-sm btn-outline-primary" href="{% url 'facturation:detail' obj.id %}">Ouvrir</a>
+              {% endif %}
+            </li>
+          {% endfor %}
+        </ul>
+      </div>
+    {% endif %}
+  {% endfor %}
+</div>
+{% endblock %}

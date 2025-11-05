@@ -1,0 +1,200 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+
+    <!-- ========================= -->
+    <!-- En-tête -->
+    <!-- ========================= -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="mb-0">📊 Gestion des Dépenses</h2>
+    
+    <div class="d-flex">
+        <a href="{% url 'depenses:export_csv' %}" class="btn btn-outline-success me-2" target="_blank">
+            <i class="bi bi-file-earmark-excel"></i> Exporter CSV
+        </a>
+        <a href="{% url 'depenses:export_pdf' %}" class="btn btn-outline-danger me-2" target="_blank">
+            <i class="bi bi-file-earmark-pdf"></i> Imprimer PDF
+        </a>
+        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#depenseModal">
+            <i class="bi bi-plus-circle"></i> Nouvelle Dépense
+        </button>
+    </div>
+    </div>
+    
+
+    <!-- ========================= -->
+    <!-- Cartes KPI -->
+    <!-- ========================= -->
+    <div class="row mb-4">
+        <div class="col-md-6 mb-3">
+            <div class="card shadow-sm border-0">
+                <div class="card-body">
+                    <h6 class="text-muted">Montant Total</h6>
+                    <h3 class="fw-bold text-primary">
+                        {{ montant_total|floatformat:2 }} FG
+                    </h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 mb-3">
+            <div class="card shadow-sm border-0">
+                <div class="card-body">
+                    <h6 class="text-muted">Dépenses du mois</h6>
+                    <h3 class="fw-bold text-danger">
+                        {{ montant_mensuel|floatformat:2 }} FG
+                    </h3>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========================= -->
+    <!-- Tableau des dépenses -->
+    <!-- ========================= -->
+    <div class="card shadow-sm border-0 mb-4">
+        <div class="card-body">
+            <h5 class="card-title">Liste des Dépenses</h5>
+            <div class="table-responsive">
+                <table class="table table-striped align-middle">
+                                        <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Site</th>
+                            <th>Catégorie</th>
+                            <th>Description</th>
+                            <th class="text-end">Montant (GNF)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for depense in page_obj %}
+                        <tr>
+                            <td>{{ depense.date|date:"d/m/Y" }}</td>
+                            <td>{{ depense.site.nom }}</td>
+                            <td>{{ depense.categorie.nom }}</td>
+                            <td>{{ depense.description|truncatechars:50 }}</td>
+                            <td class="text-end">{{ depense.montant|floatformat:2 }}</td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="5" class="text-center text-muted">Aucune dépense enregistrée.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+
+                </table>
+            </div>
+
+            <!-- Pagination -->
+            <nav aria-label="Pagination">
+                <ul class="pagination justify-content-center">
+                    {% if page_obj.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.previous_page_number }}">&laquo;</a>
+                    </li>
+                    {% endif %}
+
+                    {% for num in page_obj.paginator.page_range %}
+                        {% if page_obj.number == num %}
+                            <li class="page-item active"><span class="page-link">{{ num }}</span></li>
+                        {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                            <li class="page-item"><a class="page-link" href="?page={{ num }}">{{ num }}</a></li>
+                        {% endif %}
+                    {% endfor %}
+
+                    {% if page_obj.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.next_page_number }}">&raquo;</a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </nav>
+        </div>
+    </div>
+
+    <!-- ========================= -->
+    <!-- Graphiques -->
+    <!-- ========================= -->
+    <div class="card shadow-sm border-0 mb-4">
+        <div class="card-body">
+            <h5 class="card-title">Évolution des Dépenses</h5>
+            <div class="mb-3">
+                <select id="chartType" class="form-select w-auto">
+                    {% for type in chart_types %}
+                        <option value="{{ type }}">{{ type|title }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <canvas id="depensesChart" height="100"></canvas>
+        </div>
+    </div>
+</div>
+
+<!-- ========================= -->
+<!-- Modale Ajout Dépense -->
+<!-- ========================= -->
+<div class="modal fade" id="depenseModal" tabindex="-1" aria-labelledby="depenseModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form method="post" novalidate>
+        {% csrf_token %}
+        <div class="modal-header">
+          <h5 class="modal-title" id="depenseModalLabel">Nouvelle Dépense</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+        </div>
+        <div class="modal-body">
+          {{ form.as_p }}
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+          <button type="submit" class="btn btn-primary">Enregistrer</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- ========================= -->
+<!-- Scripts Chart.js -->
+<!-- ========================= -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const ctx = document.getElementById("depensesChart").getContext("2d");
+
+    const data = {
+        labels: {{ serie_depenses.labels|safe }},
+        datasets: [{
+            label: "Dépenses (FG)",
+            data: {{ serie_depenses.data|safe }},
+            backgroundColor: "rgba(255, 99, 132, 0.6)",
+            borderColor: "rgba(255, 99, 132, 1)",
+            borderWidth: 2
+        }]
+    };
+
+    let currentChart = new Chart(ctx, {
+        type: document.getElementById("chartType").value,
+        data: data,
+        options: {
+            responsive: true,
+            plugins: { legend: { position: "top" } }
+        }
+    });
+
+    // Changer le type de graphique dynamiquement
+    document.getElementById("chartType").addEventListener("change", function () {
+        currentChart.destroy();
+        currentChart = new Chart(ctx, {
+            type: this.value,
+            data: data,
+            options: {
+                responsive: true,
+                plugins: { legend: { position: "top" } }
+            }
+        });
+    });
+});
+</script>
+{% endblock %}

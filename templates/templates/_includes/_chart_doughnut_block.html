@@ -1,0 +1,18 @@
+{% comment %} _includes/_chart_doughnut_block.html {% endcomment %}
+{# Requires: canvas_id, json_id {labels, data, colors?} #}
+<div class="mt-3" style="position:relative;height:340px">
+  <canvas id="{{ canvas_id }}"></canvas>
+</div>
+<script>
+(function(){
+  const P = JSON.parse(document.getElementById('{{ json_id }}').textContent || '{"labels":[],"data":[]}');
+  const el = document.getElementById('{{ canvas_id }}');
+  if(!el) return;
+  new Chart(el, {
+    type:'doughnut',
+    data:{ labels:P.labels, datasets:[{ data:P.data, borderWidth:1, backgroundColor: P.colors || ['rgba(220,53,69,.35)','rgba(25,135,84,.35)','rgba(13,110,253,.35)','rgba(255,193,7,.35)'],
+      borderColor: P.colors ? undefined : ['rgba(220,53,69,1)','rgba(25,135,84,1)','rgba(13,110,253,1)','rgba(255,193,7,1)']} ]},
+    options:{ responsive:true, maintainAspectRatio:false, plugins:{ legend:{ position:'bottom' } } }
+  });
+})();
+</script>

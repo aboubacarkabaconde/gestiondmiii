@@ -1,0 +1,19 @@
+{% comment %} _includes/_chart_bar_block.html {% endcomment %}
+{# Requires: canvas_id, json_id {labels, data}, dataset_label, stroke, fill #}
+<div class="mt-3" style="position:relative;height:340px">
+  <canvas id="{{ canvas_id }}"></canvas>
+</div>
+<script>
+(function(){
+  const P = JSON.parse(document.getElementById('{{ json_id }}').textContent || '{"labels":[],"data":[]}');
+  const el = document.getElementById('{{ canvas_id }}');
+  if(!el) return;
+  new Chart(el, {
+    type:'bar',
+    data:{ labels:P.labels, datasets:[{ label:'{{ dataset_label|escapejs }}', data:P.data, borderWidth:1,
+      backgroundColor:'{{ fill }}', borderColor:'{{ stroke }}' }]},
+    options:{ responsive:true, maintainAspectRatio:false, scales:{ y:{ beginAtZero:true } },
+      plugins:{ legend:{ position:'bottom' } } }
+  });
+})();
+</script>

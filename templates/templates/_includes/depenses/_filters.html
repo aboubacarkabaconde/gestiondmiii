@@ -1,0 +1,36 @@
+{% comment %} _includes/depenses/_filters.html {% endcomment %}
+<form method="get" class="row g-3 align-items-end">
+  <div class="col-12 col-md-4">
+    <label class="form-label">Catégorie</label>
+    <select name="categorie" class="form-select" onchange="this.form.submit()">
+      <option value="">Toutes</option>
+      {% for cat in categories %}
+        <option value="{{ cat.id }}" {% if request.GET.categorie == cat.id|stringformat:'s' %}selected{% endif %}>{{ cat.nom }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <div class="col-6 col-md-4">
+    <label class="form-label">Mois</label>
+    <select name="mois" class="form-select" onchange="this.form.submit()">
+      <option value="">Tous</option>
+      {% for num, nom in mois_choices %}
+        <option value="{{ num }}" {% if request.GET.mois == num|stringformat:'s' %}selected{% endif %}>{{ nom }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <div class="col-6 col-md-4">
+    <label class="form-label">Année</label>
+    <select name="annee" class="form-select" onchange="this.form.submit()">
+      <option value="">Toutes</option>
+      {% for y in annees %}
+        <option value="{{ y }}" {% if request.GET.annee == y|stringformat:'s' %}selected{% endif %}>{{ y }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <div class="col-12 col-md-8">
+    <label class="form-label">Recherche</label>
+    <input type="text" name="q" class="form-control" value="{{ request.GET.q }}" placeholder="Mot-clé, description…">
+  </div>
+  <div class="col-6 col-md-2 d-grid"><button class="btn btn-outline-secondary">Filtrer</button></div>
+  <div class="col-6 col-md-2 d-grid"><a href="?" class="btn btn-outline-dark">Réinitialiser</a></div>
+</form>

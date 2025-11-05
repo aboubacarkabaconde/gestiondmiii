@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container mt-4">
+    <div class="card shadow-sm border-0">
+        <div class="card-body text-center">
+            <h4 class="mb-3">⚠️ Confirmation</h4>
+            <p>Voulez-vous vraiment supprimer la dépense <strong>{{ depense.libelle }}</strong> 
+               du <strong>{{ depense.date|date:"d/m/Y" }}</strong> ({{ depense.montant|floatformat:2 }} €) ?</p>
+
+            <form method="post" class="d-flex justify-content-center">
+                {% csrf_token %}
+                <a href="{% url 'depenses:liste' %}" class="btn btn-outline-secondary me-2">Annuler</a>
+                <button type="submit" class="btn btn-danger">
+                    <i class="bi bi-trash"></i> Supprimer
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

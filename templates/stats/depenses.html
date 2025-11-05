@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block title %}Statistiques Dépenses — Gestion D.M.I [ADMIN]{% endblock %}
+
+{% block content %}
+<h4 class="section-title">Statistiques — Dépenses</h4>
+<form method="get" class="row g-2 mb-3">
+  <div class="col-6 col-md-3"><input name="start" value="{{ filtre.start|date:'Y-m-d' }}" type="date" class="form-control"></div>
+  <div class="col-6 col-md-3"><input name="end"   value="{{ filtre.end|date:'Y-m-d' }}"   type="date" class="form-control"></div>
+  <div class="col-6 col-md-3"><input name="site_id" value="{{ filtre.site_id }}" class="form-control" placeholder="Site ID"></div>
+  <div class="col-6 col-md-3"><input name="categorie_id" value="{{ filtre.categorie_id }}" class="form-control" placeholder="Catégorie ID"></div>
+  <div class="col-12 col-md-2"><button class="btn btn-primary w-100">Filtrer</button></div>
+</form>
+
+{{ labels|json_script:"dep-labels" }}
+{{ serie_depenses|json_script:"dep-serie" }}
+
+<div class="card dashboard-card">
+  <div class="card-body">
+    <div style="position:relative;height:360px"><canvas id="chartDepenses"></canvas></div>
+    <p class="mt-3 mb-0">Total : <span class="fw-bold text-danger">{{ total_depenses }}</span></p>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script>
+const labels = JSON.parse(document.getElementById("dep-labels").textContent || "[]");
+const data   = JSON.parse(document.getElementById("dep-serie").textContent || "[]");
+new Chart(document.getElementById('chartDepenses'), {
+  type:'line',
+  data:{labels, datasets:[{label:'Dépenses', data, tension:.35, fill:true, borderColor:'rgba(13,110,253,1)', backgroundColor:'rgba(13,110,253,.2)'}]},
+  options:{responsive:true, maintainAspectRatio:false, scales:{y:{beginAtZero:true}}}
+});
+</script>
+{% endblock %}

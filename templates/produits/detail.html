@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block title %}Détail Produit - Gestion D.M.I{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2><i class="bi bi-box-seam"></i> {{ produit.nom }}</h2>
+        <a href="{% url 'produits:liste' %}" class="btn btn-secondary">
+            <i class="bi bi-arrow-left"></i> Retour
+        </a>
+    </div>
+
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <h5 class="card-title">Informations</h5>
+            <ul class="list-group list-group-flush">
+                <li class="list-group-item"><strong>Type :</strong> {{ produit.get_type_display }}</li>
+                <li class="list-group-item"><strong>Unité :</strong> {{ produit.unite }}</li>
+                <li class="list-group-item"><strong>Quantité en Stock :</strong> {{ produit.quantite_stock|floatformat:2 }}</li>
+                <li class="list-group-item"><strong>Site :</strong> {{ produit.site.nom }}</li>
+            </ul>
+        </div>
+    </div>
+</div>
+{% endblock %}

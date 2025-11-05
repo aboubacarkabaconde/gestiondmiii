@@ -1,0 +1,130 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+
+    <!-- En-tête -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="mb-0">📊 Statistiques des Factures</h2>
+        <a href="{% url 'factures:liste' %}" class="btn btn-secondary">
+            <i class="bi bi-arrow-left"></i> Retour aux factures
+        </a>
+    </div>
+
+    <!-- Filtres -->
+    <div class="card shadow-sm border-0 mb-4">
+        <div class="card-body">
+            <form method="get" class="row g-3 align-items-end">
+                <div class="col-md-3">
+                    <label for="start" class="form-label">Date début</label>
+                    <input type="date" name="start" id="start" value="{{ filtre.start }}" class="form-control">
+                </div>
+                <div class="col-md-3">
+                    <label for="end" class="form-label">Date fin</label>
+                    <input type="date" name="end" id="end" value="{{ filtre.end }}" class="form-control">
+                </div>
+                <div class="col-md-3">
+                    <label for="site" class="form-label">Site</label>
+                    <select name="site_id" id="site" class="form-select">
+                        <option value="">Tous</option>
+                        {% for site in sites %}
+                        <option value="{{ site.id }}" {% if filtre.site_id == site.id|stringformat:"s" %}selected{% endif %}>{{ site.nom }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-3 text-end">
+                    <button type="submit" class="btn btn-success w-100">
+                        <i class="bi bi-funnel"></i> Filtrer
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- KPI -->
+    <div class="row mb-4">
+        <div class="col-md-4 mb-3">
+            <div class="card shadow-sm border-0">
+                <div class="card-body text-center">
+                    <h6 class="text-muted">Total Factures</h6>
+                    <h3 class="fw-bold text-primary">{{ total_factures|floatformat:2 }} €</h3>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Graphiques -->
+    <div class="row">
+        <div class="col-md-6 mb-4">
+            <div class="card shadow-sm border-0">
+                <div class="card-body">
+                    <h5 class="card-title">CA par mois</h5>
+                    <canvas id="chartMensuel"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 mb-4">
+            <div class="card shadow-sm border-0">
+                <div class="card-body">
+                    <h5 class="card-title">Répartition par type</h5>
+                    <canvas id="chartType"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 mb-4">
+            <div class="card shadow-sm border-0">
+                <div class="card-body">
+                    <h5 class="card-title">Répartition par statut</h5>
+                    <canvas id="chartStatut"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    // Courbe mensuelle
+    new Chart(document.getElementById("chartMensuel"), {
+        type: "line",
+        data: {
+            labels: {{ labels|safe }},
+            datasets: [{
+                label: "CA (€)",
+                data: {{ serie_factures|safe }},
+                borderColor: "#007bff",
+                backgroundColor: "rgba(0,123,255,0.3)",
+                fill: true
+            }]
+        }
+    });
+
+    // Par type
+    new Chart(document.getElementById("chartType"), {
+        type: "pie",
+        data: {
+            labels: [{% for t in par_type %}"{{ t.type }}",{% endfor %}],
+            datasets: [{
+                data: [{% for t in par_type %}{{ t.total|default:0 }},{% endfor %}],
+                backgroundColor: ["#17a2b8","#ff6384"]
+            }]
+        }
+    });
+
+    // Par statut
+    new Chart(document.getElementById("chartStatut"), {
+        type: "doughnut",
+        data: {
+            labels: [{% for s in par_statut %}"{{ s.status }}",{% endfor %}],
+            datasets: [{
+                data: [{% for s in par_statut %}{{ s.total|default:0 }},{% endfor %}],
+                backgroundColor: ["#28a745","#ffc107","#dc3545"]
+            }]
+        }
+    });
+});
+</script>
+{% endblock %}

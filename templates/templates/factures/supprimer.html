@@ -1,0 +1,54 @@
+{% extends 'base.html' %}
+{% block title %}Confirmation de Suppression{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+
+    <!-- En-tête -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="section-title text-danger">
+            <i class="bi bi-trash me-2"></i> Confirmation de Suppression
+        </h1>
+        <a href="{% url 'factures:liste' %}" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left"></i> Retour
+        </a>
+    </div>
+
+    <!-- Carte Confirmation -->
+    <div class="card shadow-sm border-0">
+        <div class="card-body text-center">
+            {% if facture %}
+                <p class="fs-5">Voulez-vous vraiment supprimer la <strong>facture #{{ facture.id }}</strong> ?</p>
+                <p>
+                    <strong>Type :</strong> {{ facture.type }} <br>
+                    <strong>Client/Fournisseur :</strong> {{ facture.client_fournisseur|default:"-" }} <br>
+                    <strong>Total :</strong> {{ facture.total }} FG
+                </p>
+            {% elif paiement %}
+                <p class="fs-5">Voulez-vous vraiment supprimer ce <strong>paiement</strong> ?</p>
+                <p>
+                    <strong>Facture :</strong> #{{ paiement.facture.id }} <br>
+                    <strong>Produit :</strong> {{ paiement.produit.nom }} <br>
+                    <strong>Montant :</strong> {{ paiement.montant_total }} FG <br>
+                    <strong>Mode :</strong> {{ paiement.get_mode_paiement_display }}
+                </p>
+            {% endif %}
+
+            <!-- Formulaire de confirmation -->
+            <form method="post" class="mt-4">
+                {% csrf_token %}
+                <div class="d-flex justify-content-center gap-3">
+                    <a href="{% if facture %}{% url 'factures:liste' %}{% else %}{% url 'factures:detail' paiement.facture.id %}{% endif %}" 
+                       class="btn btn-outline-secondary">
+                        <i class="bi bi-x-circle"></i> Annuler
+                    </a>
+                    <button type="submit" class="btn btn-danger">
+                        <i class="bi bi-trash"></i> Supprimer
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+</div>
+{% endblock %}

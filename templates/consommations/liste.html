@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+{% block title %}Consommations - Gestion D.M.I{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between mb-4">
+        <h1 class="section-title text-warning"><i class="bi bi-box-arrow-down me-2"></i> Consommations</h1>
+        <a href="{% url 'production:ajouter_consommation' %}" class="btn btn-warning shadow">
+            <i class="bi bi-plus-circle me-1"></i> Nouvelle Consommation
+        </a>
+    </div>
+
+    <div class="card shadow-sm border-0">
+        <div class="card-body">
+            <table class="table table-hover align-middle">
+                <thead class="table-warning">
+                    <tr>
+                        <th>Date</th><th>Produit</th><th>Quantité</th><th>Site</th><th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for conso in consommations %}
+                    <tr>
+                        <td>{{ conso.date|date:"d/m/Y" }}</td>
+                        <td>{{ conso.produit.nom }}</td>
+                        <td><span class="badge bg-warning">{{ conso.quantite }} {{ conso.produit.unite }}</span></td>
+                        <td>{{ conso.site.nom }}</td>
+                        <td>
+                            <a href="{% url 'production:supprimer_consommation' conso.id %}" class="btn btn-sm btn-danger"><i class="bi bi-trash"></i></a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="5" class="text-center text-muted">Aucune consommation enregistrée</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

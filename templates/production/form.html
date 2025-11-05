@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+{% block title %}Nouvelle Production{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <h1 class="section-title text-primary"><i class="bi bi-cpu me-2"></i> Nouvelle Production</h1>
+
+    <div class="card shadow-sm border-0">
+        <div class="card-body">
+            <form method="post">
+                {% csrf_token %}
+                {{ form|crispy }}
+
+                <div class="d-flex justify-content-end gap-2 mt-3">
+                    <a href="{% url 'production:liste_productions' %}" class="btn btn-outline-secondary">Annuler</a>
+                    <button type="submit" class="btn btn-primary">Enregistrer</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

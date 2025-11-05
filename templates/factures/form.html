@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="container mt-4">
+
+    <!-- ========================= -->
+    <!-- En-tête -->
+    <!-- ========================= -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        {% if facture %}
+            <h2 class="mb-0">✏️ Modifier la Facture n°{{ facture.id }}</h2>
+        {% else %}
+            <h2 class="mb-0">➕ Nouvelle Facture</h2>
+        {% endif %}
+        <a href="{% url 'factures:liste' %}" class="btn btn-secondary">
+            <i class="bi bi-arrow-left"></i> Retour à la liste
+        </a>
+    </div>
+
+    <!-- ========================= -->
+    <!-- Formulaire -->
+    <!-- ========================= -->
+    <div class="card shadow-sm border-0">
+        <div class="card-body">
+            <form method="post" novalidate>
+                {% csrf_token %}
+                {{ form.as_p }}
+
+                <div class="d-flex justify-content-end mt-3">
+                    <a href="{% url 'factures:liste' %}" class="btn btn-outline-secondary me-2">Annuler</a>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-check-circle"></i>
+                        {% if facture %} Mettre à jour {% else %} Enregistrer {% endif %}
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
